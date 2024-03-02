@@ -1,202 +1,217 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, KeyboardAvoidingView, Platform, TouchableOpacity, Linking, ImageBackground } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MaskInput from 'react-native-mask-input';
 import Colors from '@/constants/Colors';
-import LinearGradient from 'react-native-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Linking,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import MaskInput from 'react-native-mask-input';
+import { isClerkAPIResponseError, useSignIn, useSignUp } from '@clerk/clerk-expo';
+
+const GER_PHONE = [
+  `+`,
+  /\d/,
+  /\d/,
+  ' ',
+  /\d/,
+  /\d/,
+  /\d/,
+  ' ',
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+];
 
 const Page = () => {
-  const [loading, setLoading] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const router = useRouter();
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 90 : 0;
-  const { bottom } = useSafeAreaInsets();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const { signUp, setActive } = useSignUp();
+  const { signIn } = useSignIn();
 
-  const sendOTP = async () => {
-    // Your logic for sending OTP
-    // For demonstration purposes, let's navigate to another screen
-    router.push('/otp');
-  }
-
-  const trySignIn = async () => {};
-  
   const openLink = () => {
     Linking.openURL('https://galaxies.dev');
   };
 
+  const sendOTP = async () => {
+    console.log('sendOTP', phoneNumber);
+    setLoading(true);
+
+    try {
+      await signUp!.create({
+        phoneNumber,
+      });
+      console.log('TESafter createT: ', signUp!.createdSessionId);
+
+      signUp!.preparePhoneNumberVerification();
+
+      console.log('after prepare: ');
+      router.push(`/verify/${phoneNumber}`);
+    } catch (err) {
+      console.log('error', JSON.stringify(err, null, 2));
+
+      if (isClerkAPIResponseError(err)) {
+        if (err.errors[0].code === 'form_identifier_exists') {
+          // User signed up before
+          console.log('User signed up before');
+          await trySignIn();
+        } else {
+          setLoading(false);
+          Alert.alert('Error', err.errors[0].message);
+        }
+      }
+    }
+  };
+
+  const trySignIn = async () => {
+    console.log('trySignIn', phoneNumber);
+
+    const { supportedFirstFactors } = await signIn!.create({
+      identifier: phoneNumber,
+    });
+
+    const firstPhoneFactor: any = supportedFirstFactors.find((factor: any) => {
+      return factor.strategy === 'phone_code';
+    });
+
+    const { phoneNumberId } = firstPhoneFactor;
+
+    await signIn!.prepareFirstFactor({
+      strategy: 'phone_code',
+      phoneNumberId,
+    });
+
+    router.push(`/verify/${phoneNumber}?signin=true`);
+    setLoading(false);
+  };
+
   return (
-    <ImageBackground source={require('../assets/images/bg.png')} style={styles.bg}>
-      <LinearGradient colors={['#3461A8', '#000']} style={styles.gradient}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={keyboardVerticalOffset}>
-          <View style={[styles.container, { marginBottom: bottom }]}>
-            <Text style={styles.description}> We will need to verify your account. Carrier charges may apply</Text>
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={keyboardVerticalOffset}
+      style={{ flex: 1 }}
+      behavior="padding">
+      {loading && (
+        <View style={[StyleSheet.absoluteFill, styles.loading]}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={{ fontSize: 18, padding: 10 }}>Sending code...</Text>
+        </View>
+      )}
 
-            <View style={styles.list}>
-              <View style={styles.listItem}>
-                <Text style={styles.listItemText}>India</Text>
-                <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
-              </View>
-              <View style={styles.separator} />
+      <View style={styles.container}>
+        <Text style={styles.description}>
+          WhatsApp will need to verify your account. Carrier charges may apply.
+        </Text>
 
-              <MaskInput
-                value={phoneNumber}
-                style={styles.input}
-                onChangeText={(masked, unmasked) => setPhoneNumber(masked)}
-                mask={[
-                  '+',
-                  /\d/,
-                  /\d/,
-                  ' ',
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  ' ',
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                  /\d/,
-                ]}
-                placeholder="Enter your phone number"
-                keyboardType="phone-pad"
-                placeholderTextColor={Colors.gray}
-              />
-            </View>
-
-            <Text style={styles.legal}>
-              You must be{' '}
-              <Text style={styles.link} onPress={openLink}>
-                at least 16 years old
-              </Text>{' '}
-              to register. Learn how WhatsApp works with the{' '}
-              <Text style={styles.link} onPress={openLink}>
-                Meta Companies
-              </Text>
-              .
-            </Text>
-            
-            <TouchableOpacity
-              style={[styles.button, phoneNumber !== '' ? styles.enabled : null]}
-              onPress={sendOTP}
-              disabled={phoneNumber === ''}
-              accessibilityLabel="Next"
-            >
-              <View style={styles.overlay} />
-              <Text style={styles.buttonText}>Next</Text>
-            </TouchableOpacity>
+        <View style={styles.list}>
+          <View style={styles.listItem}>
+            <Text style={styles.listItemText}>India</Text>
+            <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
           </View>
-        </KeyboardAvoidingView>
-      </LinearGradient>
-    </ImageBackground>
+          <View style={styles.separator} />
+
+          <MaskInput
+            value={phoneNumber}
+            keyboardType="numeric"
+            autoFocus
+            placeholder="+12 your phone number"
+            onChangeText={(masked, unmasked) => {
+              setPhoneNumber(masked);
+            }}
+            mask={GER_PHONE}
+            style={styles.input}
+          />
+        </View>
+
+        <Text style={styles.legal}>
+          You must be{' '}
+          <Text style={styles.link} onPress={openLink}>
+            at least 16 years old
+          </Text>{' '}
+          to register. Learn how WhatsApp works with the{' '}
+          <Text style={styles.link} onPress={openLink}>
+            Meta Companies
+          </Text>
+          .
+        </Text>
+
+        <View style={{ flex: 1 }} />
+
+        <TouchableOpacity
+          style={[styles.button, phoneNumber !== '' ? styles.enabled : null, { marginBottom: 20 }]}
+          onPress={sendOTP}>
+          <Text style={[styles.buttonText, phoneNumber !== '' ? styles.enabled : null]}>Next</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  bg: {
-    flex: 1,
-    resizeMode: 'cover',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  gradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 20,
+    backgroundColor: Colors.background,
+    gap: 20,
   },
   description: {
-    fontSize: 18,
-    color: Colors.white,
-    textAlign: 'center',
-    marginBottom: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    fontSize: 14,
+    color: Colors.gray,
   },
   legal: {
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
-    color: Colors.white,
-    marginBottom: 20,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    color: '#000',
   },
   link: {
     color: Colors.primary,
-    textDecorationLine: 'underline',
   },
   button: {
     width: '100%',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
-    padding: 14,
+    backgroundColor: Colors.lightGray,
+    padding: 10,
     borderRadius: 10,
-    marginTop: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  },
+  enabled: {
+    backgroundColor: Colors.primary,
+    color: '#fff',
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.white,
-  },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    width: '100%',
-    fontSize: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginTop: 10,
-    color: Colors.black,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderRadius: 10,
+    color: Colors.gray,
+    fontSize: 22,
+    fontWeight: '500',
   },
   list: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: '#fff',
     width: '100%',
     borderRadius: 10,
     padding: 10,
-    marginTop: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
   },
   listItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.gray,
+    padding: 6,
+    marginBottom: 10,
   },
   listItemText: {
-    fontSize: 16,
-    color: Colors.black,
+    fontSize: 18,
+    color: Colors.primary,
   },
   separator: {
     width: '100%',
@@ -204,9 +219,19 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.gray,
     opacity: 0.2,
   },
-  enabled: {
-    backgroundColor: Colors.primary,
-    color: '#fff',
+  input: {
+    backgroundColor: '#fff',
+    width: '100%',
+    fontSize: 16,
+    padding: 6,
+    marginTop: 10,
+  },
+
+  loading: {
+    zIndex: 10,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
