@@ -16,7 +16,7 @@ const Layout = () => {
             )
           }}
         />
-        <Tabs.Screen name="menu" options={{ href: null }} />
+       
         <Tabs.Screen name='events' options={{
             title: 'Events',
             tabBarIcon: ({ size, color }) => (

@@ -12,9 +12,17 @@
 //export type Enums<T extends keyof Database['public']['Enums']> =
   //Database['public']['Enums'][T];
 export type TopTrendy = {
-    id: number,
-    image: string | null;
-    name: string;
+  id: number;
+  image: string | null;
+  name: string;
+  rating: number;
+  location: string;
+  description: string;
+  keyDetails: string;
+  architectureDetails: string;
+  servicesDetails: string;
+  visitingDetails: string;
+  startingPrice: number;
 
 }
  export type ListingPage = {
