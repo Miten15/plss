@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './HomeScreen';
 import OTPScreen from './OTPScreen';
+import PackageScreen from './PackageScreen'
 
 const Stack = createStackNavigator();
 
@@ -21,6 +22,10 @@ export default function Navigation() {
           component={OTPScreen}
           options={{ headerTitle: 'Enter Your Phone Number', headerBackVisible: false }}
         />
+         <Stack.Screen 
+        name="PackageScreen"
+        component={PackageScreen}
+      />
       </Stack.Navigator>
     </NavigationContainer>
   );
