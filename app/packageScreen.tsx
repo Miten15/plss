@@ -1,35 +1,51 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
-interface PackageScreenProps {
-  route: {
-    params: {
-      packageData: any[]; // Change the type if needed
-    };
-  };
-}
+const PackageListing = () => {
+  // Retrieve the id parameter from local search params
+  const { id } = useLocalSearchParams();
+  
+  // Sample packages data
+  const packagesData = [
+    {
+      id: 1,
+      name: 'Package 1',
+      description: 'Description of Package 1',
+    },
+    {
+      id: 2,
+      name: 'Package 2',
+      description: 'Description of Package 2',
+    },
+    // Add more packages as needed
+  ];
 
-const PackageScreen: React.FC<PackageScreenProps> = ({ route }) => {
-  const { packageData } = route.params;
+  // Filter packages based on the selected ID
+  const filteredPackages = packagesData.filter((pkg) => pkg.id.toString() === id);
 
+  // Render component
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Packages</Text>
-      {packageData.map((packageItem: any) => ( // Change the type if needed
-        <View key={packageItem.id} style={styles.packageContainer}>
-          <Text style={styles.packageTitle}>{packageItem.name}</Text>
-          <Text style={styles.packageDescription}>{packageItem.description}</Text>
-          {/* Add any other package details here */}
-        </View>
-      ))}
-    </View>
+      {/* Render each package */}
+      {filteredPackages.length > 0 ? (
+        filteredPackages.map((pkg) => (
+          <View key={pkg.id} style={styles.packageContainer}>
+            <Text style={styles.packageTitle}>{pkg.name}</Text>
+            <Text style={styles.packageDescription}>{pkg.description}</Text>
+          </View>
+        ))
+      ) : (
+        <Text style={styles.errorText}>No packages found for the selected ID.</Text>
+      )}
+    </ScrollView>
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
     padding: 20,
   },
   title: {
@@ -48,6 +64,11 @@ const styles = StyleSheet.create({
   packageDescription: {
     fontSize: 16,
   },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
+    textAlign: 'center',
+  },
 });
 
-export default PackageScreen;
+export default PackageListing;

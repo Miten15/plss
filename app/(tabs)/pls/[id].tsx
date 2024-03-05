@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, ScrollView, Pressable, TouchableOpacity 
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'; // Import useRouter
 import topTrendy from '@/assets/data/list';
 import { defaultImage } from '@/components/TempleList1';
-import { packagesData } from '@/components/packagesData';
+import { places } from '@/components/packagesData';
 
 const ItemListing = () => {
   const { id } = useLocalSearchParams();

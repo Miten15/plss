@@ -94,6 +94,14 @@ const InitialLayout = () => {
         headerShown: false,
         
       }} ></Stack.Screen>
+
+<Stack.Screen 
+      name='PackageScreen'
+      options={{
+        
+        headerShown: false,
+        
+      }} ></Stack.Screen>
   </Stack>
   
 
