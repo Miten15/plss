@@ -6,7 +6,8 @@ import { useEffect } from 'react';
 import { ClerkProvider, useAuth} from '@clerk/clerk-expo'
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 import * as SecureStore from 'expo-secure-store';
-import { View } from 'react-native';
+import { View } from 'react-native'; 
+import BookingProvider from '@/providers/BookingProvider';
 
 // Cache the Clerk JWT
 const tokenCache = {
@@ -98,9 +99,8 @@ const InitialLayout = () => {
 <Stack.Screen 
       name='PackageScreen'
       options={{
-        
-        headerShown: false,
-        
+        presentation: 'modal',
+        headerTitle: 'Select Your Packages', 
       }} ></Stack.Screen>
   </Stack>
   
@@ -110,9 +110,13 @@ const InitialLayout = () => {
 
 const RootLayoutNav = () => {
   return (
+    <BookingProvider >
     <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
+    
     <InitialLayout />
+    
     </ClerkProvider>
+    </BookingProvider>
   );
 }
 

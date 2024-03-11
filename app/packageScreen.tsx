@@ -1,44 +1,34 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router'; // Import useLocalSearchParams
+import { packagesData } from '@/components/packagesData';
+import BookingProvider, { BookingContext } from '@/providers/BookingProvider';
+import { useContext } from 'react';
 
+
+const PackageScreen = () => {
+  const {} = useContext(BookingContext)
+}
 const PackageListing = () => {
   // Retrieve the id parameter from local search params
   const { id } = useLocalSearchParams();
-  
-  // Sample packages data
-  const packagesData = [
-    {
-      id: 1,
-      name: 'Package 1',
-      description: 'Description of Package 1',
-    },
-    {
-      id: 2,
-      name: 'Package 2',
-      description: 'Description of Package 2',
-    },
-    // Add more packages as needed
-  ];
 
   // Filter packages based on the selected ID
-  const filteredPackages = packagesData.filter((pkg) => pkg.id.toString() === id);
+ // const packageItem = packagesData.find((pkg) => pkg.id.toString() === id);
 
   // Render component
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Packages</Text>
-      {/* Render each package */}
-      {filteredPackages.length > 0 ? (
-        filteredPackages.map((pkg) => (
-          <View key={pkg.id} style={styles.packageContainer}>
-            <Text style={styles.packageTitle}>{pkg.name}</Text>
-            <Text style={styles.packageDescription}>{pkg.description}</Text>
-          </View>
-        ))
+      {/* Render package if found 
+      {packageItem ? (
+        <View style={styles.packageContainer}>
+          <Text style={styles.packageTitle}>{packageItem.name}</Text>
+          <Text style={styles.packageDescription}>{packageItem.description}</Text>
+        </View> 
       ) : (
-        <Text style={styles.errorText}>No packages found for the selected ID.</Text>
-      )}
+        <Text style={styles.errorText}>No package found for the selected ID.</Text>
+      )}*/}
+       <Text >Cart items length: .</Text>
     </ScrollView>
   );
 };
@@ -47,11 +37,6 @@ const PackageListing = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
   },
   packageContainer: {
     marginBottom: 20,

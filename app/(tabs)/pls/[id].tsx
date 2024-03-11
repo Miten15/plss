@@ -3,11 +3,12 @@ import { View, Text, Image, StyleSheet, ScrollView, Pressable, TouchableOpacity 
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'; // Import useRouter
 import topTrendy from '@/assets/data/list';
 import { defaultImage } from '@/components/TempleList1';
-import { places } from '@/components/packagesData';
+import { packagesData } from '@/components/packagesData';
 
 const ItemListing = () => {
   const { id } = useLocalSearchParams();
   const listing = topTrendy.find((l) => l.id.toString() === id);
+  const pkg = id 
   const router = useRouter(); // Use useRouter hook here
 
   const openBooking = () => {

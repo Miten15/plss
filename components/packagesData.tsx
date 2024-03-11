@@ -1,5 +1,5 @@
-// packagesData.tsx
-export const places = [
+// packagesData.t
+export const packagesData = [
     {
       id: 1,
       listingId: 1,
