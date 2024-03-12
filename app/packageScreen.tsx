@@ -18,18 +18,9 @@ const PackageListing = () => {
 
   // Render component
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Render package if found 
-      {packageItem ? (
-        <View style={styles.packageContainer}>
-          <Text style={styles.packageTitle}>{packageItem.name}</Text>
-          <Text style={styles.packageDescription}>{packageItem.description}</Text>
-        </View> 
-      ) : (
-        <Text style={styles.errorText}>No package found for the selected ID.</Text>
-      )}*/}
-       <Text >Cart items length: .</Text>
-    </ScrollView>
+  <ScrollView>
+    <Text>Hmmmm</Text>
+  </ScrollView>
   );
 };
 
